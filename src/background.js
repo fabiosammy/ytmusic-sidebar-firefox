@@ -1,36 +1,107 @@
-// YouTube Music refuses to be shown inside a frame (X-Frame-Options:
-// SAMEORIGIN). This rule removes that header, but only for frames that are not
-// in any tab (tabIds -1, i.e. our sidebar), so frames inside normal websites
-// stay protected.
-const FRAME_RULE = {
-  id: 1,
-  priority: 1,
-  action: {
-    type: "modifyHeaders",
-    responseHeaders: [{ header: "x-frame-options", operation: "remove" }],
-  },
-  condition: {
-    requestDomains: ["music.youtube.com"],
-    resourceTypes: ["sub_frame"],
-    tabIds: [-1],
+// Owns the single hidden YouTube Music "player tab". Music only ever plays
+// there, so it keeps going when the sidebar closes and Firefox's own media key
+// support applies. The sidebar is a remote that talks to it through here.
+
+const HOME = "https://music.youtube.com/";
+
+let playerPort = null;
+const pending = new Map(); // request id -> { resolve, reject }
+let nextId = 1;
+
+// The tab id is kept in session storage because Firefox may unload this
+// background script while music plays.
+async function storedPlayerTab() {
+  const { playerTabId } = await browser.storage.session.get("playerTabId");
+  if (playerTabId == null) return null;
+  try {
+    return await browser.tabs.get(playerTabId);
+  } catch {
+    return null; // the tab was closed
+  }
+}
+
+// Returns the player tab, creating (hidden) the one and only one if needed.
+// The sidebar sends several requests at once, so creation is serialised.
+let creating = null;
+function ensurePlayerTab(url = HOME) {
+  creating ??= (async () => {
+    const existing = await storedPlayerTab();
+    if (existing) return existing;
+    const tab = await browser.tabs.create({ url, active: false });
+    await browser.storage.session.set({ playerTabId: tab.id });
+    await browser.tabs.hide(tab.id);
+    return tab;
+  })().finally(() => (creating = null));
+  return creating;
+}
+
+async function waitForPlayerPort() {
+  for (let i = 0; i < 60 && !playerPort; i++) await new Promise((r) => setTimeout(r, 250));
+  if (!playerPort) throw new Error("The YouTube Music player tab is not ready yet.");
+}
+
+// Calls a function of player.js in the player tab and returns its result.
+async function callPlayer(method, args) {
+  await ensurePlayerTab();
+  await waitForPlayerPort();
+  const id = nextId++;
+  return new Promise((resolve, reject) => {
+    pending.set(id, { resolve, reject });
+    playerPort.postMessage({ id, method, args });
+    setTimeout(() => {
+      if (pending.delete(id)) reject(new Error(`${method} timed out`));
+    }, 10000);
+  });
+}
+
+// Loads a song or playlist in the player tab; YouTube Music starts playing it.
+async function playUrl(url) {
+  const existing = await storedPlayerTab();
+  if (existing) await browser.tabs.update(existing.id, { url });
+  else await ensurePlayerTab(url);
+}
+
+browser.runtime.onConnect.addListener(async (port) => {
+  if (port.name !== "ytm-tab") return;
+  const { playerTabId } = await browser.storage.session.get("playerTabId");
+  if (port.sender.tab?.id !== playerTabId) return; // the user's own YouTube Music tabs
+  playerPort = port;
+  port.onMessage.addListener(({ id, result, error }) => {
+    const request = pending.get(id);
+    if (!request) return;
+    pending.delete(id);
+    error ? request.reject(new Error(error)) : request.resolve(result);
+  });
+  port.onDisconnect.addListener(() => {
+    if (playerPort === port) playerPort = null;
+  });
+});
+
+browser.tabs.onRemoved.addListener(async (tabId) => {
+  const { playerTabId } = await browser.storage.session.get("playerTabId");
+  if (tabId !== playerTabId) return;
+  playerPort = null;
+  await browser.storage.session.remove("playerTabId");
+});
+
+const MESSAGES = {
+  call: ({ method, args }) => callPlayer(method, args),
+  playPlaylist: ({ id }) => playUrl(`${HOME}watch?list=${encodeURIComponent(id)}`),
+  playSong: ({ videoId }) => playUrl(`${HOME}watch?v=${encodeURIComponent(videoId)}`),
+  // Shows the player tab, for the full YouTube Music page.
+  showPlayer: async () => {
+    const tab = await ensurePlayerTab();
+    await browser.tabs.show(tab.id);
+    await browser.tabs.update(tab.id, { active: true });
   },
 };
 
-browser.declarativeNetRequest.updateSessionRules({ removeRuleIds: [FRAME_RULE.id], addRules: [FRAME_RULE] });
-
-// Firefox only routes media keys to media playing in tabs, not in a sidebar.
-// The keys are registered as extension commands instead and relayed to the
-// content script running inside the sidebar's YouTube Music frame.
-const framePorts = new Set();
-
-browser.runtime.onConnect.addListener((port) => {
-  if (port.name !== "ytm-sidebar-frame") return;
-  framePorts.add(port);
-  port.onDisconnect.addListener(() => framePorts.delete(port));
-});
-
-browser.commands.onCommand.addListener((command) => {
-  for (const port of framePorts) port.postMessage({ command });
+browser.runtime.onMessage.addListener((message) => {
+  const handler = MESSAGES[message?.type];
+  if (!handler) return undefined;
+  return Promise.resolve(handler(message))
+    .then((result) => ({ result }))
+    .catch((err) => ({ error: String(err?.message || err) }));
 });
 
 // The toolbar button opens the sidebar.

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "YouTube Music Sidebar",
   "version": "0.1.0",
-  "description": "YouTube Music in the Firefox sidebar: your playlists, library and player, signed in with your account.",
+  "description": "A YouTube Music remote in the Firefox sidebar. Music plays in one hidden tab, keeps going when the sidebar closes, and works with your media keys.",
   "browser_specific_settings": {
     "gecko": {
       "id": "ytmusic-sidebar@local",
@@ -15,10 +15,11 @@
     }
   },
   "permissions": [
-    "declarativeNetRequestWithHostAccess"
+    "storage",
+    "tabHide"
   ],
   "host_permissions": [
-    "https://*.youtube.com/*"
+    "https://music.youtube.com/*"
   ],
   "background": {
     "scripts": [
@@ -39,24 +40,6 @@
       "suggested_key": {
         "default": "Alt+Shift+M"
       }
-    },
-    "play-pause": {
-      "suggested_key": {
-        "default": "MediaPlayPause"
-      },
-      "description": "Play/pause YouTube Music in the sidebar"
-    },
-    "next-track": {
-      "suggested_key": {
-        "default": "MediaNextTrack"
-      },
-      "description": "Next song"
-    },
-    "previous-track": {
-      "suggested_key": {
-        "default": "MediaPrevTrack"
-      },
-      "description": "Previous song"
     }
   },
   "icons": {
@@ -69,9 +52,8 @@
         "https://music.youtube.com/*"
       ],
       "js": [
-        "src/frame.js"
+        "src/player.js"
       ],
-      "all_frames": true,
       "run_at": "document_idle"
     }
   ]
