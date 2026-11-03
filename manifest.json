@@ -33,7 +33,8 @@
     "default_icon": "icons/icon.svg"
   },
   "action": {
-    "default_title": "Open YouTube Music sidebar",
+    "default_title": "YouTube Music",
+    "default_popup": "src/popup.html",
     "default_icon": "icons/icon.svg"
   },
   "commands": {

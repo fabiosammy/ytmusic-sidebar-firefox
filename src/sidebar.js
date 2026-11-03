@@ -17,29 +17,14 @@ let lyricsFor = null; // videoId the lyrics view shows
 let librarySection = "albums";
 let collectionBack = "playlists"; // view to return to from a playlist/album
 
-// Sends a message to the background and unwraps { result } / { error }.
-async function send(message) {
-  const reply = await browser.runtime.sendMessage(message);
-  if (reply?.error) throw new Error(reply.error);
-  return reply?.result;
-}
-
-const call = (method, args) => send({ type: "call", method, args });
-
-function formatTime(seconds) {
-  const s = Math.max(0, Math.floor(seconds || 0));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-
 function setStatus(message) {
   status.textContent = message;
 }
 
-function el(tag, className, textContent) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (textContent != null) node.textContent = textContent;
-  return node;
+// Turns player errors into something readable; `what` is e.g. "your playlists".
+function describeError(err, what) {
+  if (err.message === SIGNED_OUT) return `Sign in to YouTube Music to see ${what}.`;
+  return `Couldn't load ${what}: ${err.message}`;
 }
 
 // --- Now playing ------------------------------------------------------------
@@ -48,6 +33,8 @@ const REPEAT_TITLES = { NONE: "Repeat: off", ALL: "Repeat: all", ONE: "Repeat: o
 
 function renderState(state) {
   current = state;
+  // Unknown (no player tab yet) counts as signed in, to avoid a false alarm.
+  $("signed-out").hidden = state?.signedIn !== false;
   const has = Boolean(state?.videoId);
   $("title").textContent = has ? state.title : "Nothing playing";
   $("artist").textContent = has ? [state.artist, state.album].filter(Boolean).join(" · ") : "Pick something below";
@@ -119,7 +106,7 @@ function setView(name) {
 
 // Fills the list one page at a time, with a "Load more" button while the
 // player tab says there are more pages. `render` turns a page into nodes.
-async function loadPaged({ method, args, render, loadingText, emptyText }) {
+async function loadPaged({ method, args, render, loadingText, emptyText, what }) {
   const token = listToken;
   let continuation = null;
   let count = 0;
@@ -138,7 +125,7 @@ async function loadPaged({ method, args, render, loadingText, emptyText }) {
       if (continuation) list.append(more);
       setStatus(count ? "" : emptyText);
     } catch (err) {
-      if (token === listToken) setStatus(err.message);
+      if (token === listToken) setStatus(describeError(err, what));
     }
   }
 
@@ -150,6 +137,7 @@ function showHome() {
   setView("home");
   return loadPaged({
     method: "getHome",
+    what: "your home page",
     render: ({ sections }) =>
       sections.flatMap((section) => [el("h3", "section-title", section.title), ...section.items.map(entry)]),
     loadingText: "Loading home…",
@@ -161,9 +149,10 @@ function showPlaylists() {
   setView("playlists");
   return loadPaged({
     method: "getPlaylists",
+    what: "your playlists",
     render: ({ items }) => items.map(entry),
     loadingText: "Loading your playlists…",
-    emptyText: "No playlists found. Are you signed in to YouTube Music?",
+    emptyText: "You have no playlists yet.",
   });
 }
 
@@ -175,6 +164,7 @@ function showLibrary(section = librarySection) {
     .forEach((b) => b.classList.toggle("active", b.dataset.section === section));
   return loadPaged({
     method: "getLibrary",
+    what: `your ${section}`,
     args: { section },
     render: ({ items }) => items.map(entry),
     loadingText: `Loading your ${section}…`,
@@ -197,6 +187,7 @@ function showCollection(collection) {
   list.append(head);
   return loadPaged({
     method: "getCollection",
+    what: "these songs",
     args: { browseId: collection.browseId },
     render: ({ items }) =>
       items.map((song) =>
@@ -215,6 +206,7 @@ function showResults(query) {
   if (!query) return;
   return loadPaged({
     method: "search",
+    what: "search results",
     args: { query },
     render: ({ items }) => items.map(entry),
     loadingText: `Searching “${query}”…`,
@@ -312,7 +304,7 @@ document.querySelectorAll("[data-action]").forEach((button) => {
   button.addEventListener("click", () =>
     call("control", { action: button.dataset.action })
       .then(refresh)
-      .catch((err) => setStatus(err.message)),
+      .catch((err) => setStatus(err.message === SIGNED_OUT ? "Sign in to YouTube Music to like songs." : err.message)),
   );
 });
 
@@ -342,6 +334,15 @@ $("notify").addEventListener("click", async () => {
   const { notify } = await browser.storage.local.get("notify");
   await browser.storage.local.set({ notify: !notify });
   renderNotifyToggle();
+});
+
+$("sign-in").addEventListener("click", openSignIn);
+
+// The player tab only notices a sign-in after it reloads.
+$("signed-in-retry").addEventListener("click", async () => {
+  setStatus("Reloading the player…");
+  await send({ type: "reloadPlayer" });
+  setTimeout(() => showView(view === "collection" ? collectionBack : view), 4000);
 });
 
 $("show-player").addEventListener("click", () => send({ type: "showPlayer" }));

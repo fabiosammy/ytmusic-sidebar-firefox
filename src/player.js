@@ -23,6 +23,16 @@ function lastThumbnail(list) {
   return list?.length ? list[list.length - 1].url : "";
 }
 
+// YouTube Music's own flag; it only changes when the page reloads.
+function signedIn() {
+  return Boolean(page.ytcfg?.get("LOGGED_IN"));
+}
+
+// Account-only features reject with SIGNED_OUT so the sidebar can say why.
+function requireSignIn() {
+  if (!signedIn()) throw new Error("SIGNED_OUT");
+}
+
 // NONE | ALL | ONE. YouTube Music keeps it on the player bar element.
 function repeatMode() {
   const bar = playerBar();
@@ -33,7 +43,7 @@ function repeatMode() {
 function getState() {
   const p = player();
   const data = p?.getVideoData?.() ?? {};
-  if (!data.video_id) return { videoId: null };
+  if (!data.video_id) return { videoId: null, signedIn: signedIn() };
   const bar = playerBar();
   const meta = page.navigator.mediaSession?.metadata;
   const artwork = meta?.artwork;
@@ -49,6 +59,7 @@ function getState() {
     volume: p.getVolume(),
     like: bar?.querySelector("ytmusic-like-button-renderer")?.getAttribute("like-status") ?? "INDIFFERENT",
     repeat: repeatMode(),
+    signedIn: signedIn(),
   };
 }
 
@@ -64,6 +75,7 @@ const BUTTONS = {
 };
 
 function control({ action }) {
+  if (action === "like" || action === "dislike") requireSignIn();
   const button = document.querySelector(BUTTONS[action]);
   if (!button) throw new Error(`Couldn't find the ${action} button`);
   button.click();
@@ -231,6 +243,7 @@ async function browsePage(body, continuation, kinds) {
 }
 
 function getPlaylists({ continuation }) {
+  requireSignIn();
   return browsePage({ browseId: "FEmusic_liked_playlists" }, continuation, ["playlist"]);
 }
 
@@ -242,6 +255,7 @@ const LIBRARY = {
 };
 
 function getLibrary({ section, continuation }) {
+  requireSignIn();
   return browsePage({ browseId: LIBRARY[section] }, continuation);
 }
 
@@ -328,6 +342,8 @@ function connect() {
   });
   // The background script may restart; reconnect instead of going deaf.
   port.onDisconnect.addListener(() => setTimeout(connect, 1000));
+  // Lets the background notice a sign-in made in one of the user's own tabs.
+  port.postMessage({ type: "hello", signedIn: signedIn() });
 }
 
 connect();

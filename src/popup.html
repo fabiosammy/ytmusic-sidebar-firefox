@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>YouTube Music</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <section class="now">
+      <img id="artwork" alt="" hidden />
+      <div class="meta">
+        <div id="title">Nothing playing</div>
+        <div id="artist">Open the sidebar to pick something</div>
+      </div>
+    </section>
+
+    <div class="progress">
+      <span id="time">0:00</span>
+      <div class="bar"><div id="bar-fill"></div></div>
+      <span id="duration">0:00</span>
+    </div>
+
+    <div class="buttons">
+      <button data-action="like" id="like" class="icon" title="Like">👍</button>
+      <button data-action="previous" class="icon" title="Previous">⏮</button>
+      <button data-action="toggle" id="toggle" class="icon big" title="Play/pause">▶</button>
+      <button data-action="next" class="icon" title="Next">⏭</button>
+      <span class="spacer-icon"></span>
+    </div>
+
+    <p id="signed-out" hidden>Signed out of YouTube Music. <button id="sign-in">Sign in</button></p>
+    <p id="status"></p>
+
+    <button id="open-sidebar">Open sidebar</button>
+
+    <script src="common.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

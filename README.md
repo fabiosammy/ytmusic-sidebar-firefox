@@ -17,6 +17,14 @@ these views:
   open to their songs with *Play all*, artists play their shuffle or radio
 - **Queue**, **Lyrics** of the current song, and song **search**
 
+The toolbar button opens a small popup with the current song, previous /
+play-pause / next, like and **Open sidebar** (`Alt+Shift+M` opens the sidebar
+directly).
+
+Signed out of YouTube Music? The sidebar says so and offers **Sign in**. Once
+you sign in in any YouTube Music tab, the hidden player reloads by itself
+(or click **I've signed in**).
+
 Long lists have *Load more*. 🔔 turns on a desktop notification when a new song
 starts (off by default).
 
@@ -34,7 +42,7 @@ add-on at addons.mozilla.org.
 ## Use
 
 1. Sign in to music.youtube.com in a normal tab once.
-2. Open the sidebar with the toolbar button or `Alt+Shift+M`. Click **Allow
+2. Open the sidebar with `Alt+Shift+M` or the popup's **Open sidebar**. Click **Allow
    access** if asked.
 3. Pick a playlist or search for a song. ↗ shows the player tab for the full
    YouTube Music page.
@@ -53,6 +61,8 @@ so set these once:
 | `src/background.js` | Creates and remembers the single hidden player tab (`tabs.hide`, id in `storage.session`) and relays sidebar requests to it |
 | `src/player.js` | Content script in the player tab: reads the player, presses its buttons, lists the queue, and calls YouTube Music's own web API (innertube, authenticated like the page) for playlists and search |
 | `src/sidebar.*` | The remote UI; polls the player state once a second |
+| `src/popup.*` | Toolbar popup: compact now playing and controls |
+| `src/common.js` | Helpers shared by sidebar and popup |
 
 Starting a playlist or song loads `watch?list=…` / `watch?v=…` in the player
 tab, so there is a short pause while YouTube Music loads.

@@ -67,12 +67,27 @@ async function playUrl(url) {
   else await ensurePlayerTab(url);
 }
 
+let playerSignedIn = null; // as last reported by the player tab
+
+// The player tab only learns about a sign-in when it reloads, so reload it
+// when one of the user's own YouTube Music tabs is signed in and it isn't.
+async function onUserTabHello(signedIn) {
+  if (!signedIn || playerSignedIn !== false) return;
+  const tab = await storedPlayerTab();
+  if (tab) await browser.tabs.reload(tab.id);
+}
+
 browser.runtime.onConnect.addListener(async (port) => {
   if (port.name !== "ytm-tab") return;
   const { playerTabId } = await browser.storage.session.get("playerTabId");
-  if (port.sender.tab?.id !== playerTabId) return; // the user's own YouTube Music tabs
+  if (port.sender.tab?.id !== playerTabId) {
+    // One of the user's own YouTube Music tabs: only listen for its sign-in state.
+    port.onMessage.addListener((m) => m.type === "hello" && onUserTabHello(m.signedIn));
+    return;
+  }
   playerPort = port;
-  port.onMessage.addListener(({ id, result, error, type, state }) => {
+  port.onMessage.addListener(({ id, result, error, type, state, signedIn }) => {
+    if (type === "hello") return void (playerSignedIn = signedIn);
     if (type === "songChanged") return notifySong(state);
     const request = pending.get(id);
     if (!request) return;
@@ -121,6 +136,11 @@ const MESSAGES = {
     if (playlistId) params.set("list", playlistId);
     return playUrl(`${HOME}watch?${params}`);
   },
+  // After signing in elsewhere: the player tab must reload to see it.
+  reloadPlayer: async () => {
+    const tab = await storedPlayerTab();
+    if (tab) await browser.tabs.reload(tab.id);
+  },
   // Shows the player tab, for the full YouTube Music page. It hides itself
   // again when the user switches to another tab (see onActivated above).
   showPlayer: async () => {
@@ -137,6 +157,3 @@ browser.runtime.onMessage.addListener((message) => {
     .then((result) => ({ result }))
     .catch((err) => ({ error: String(err?.message || err) }));
 });
-
-// The toolbar button opens the sidebar.
-browser.action.onClicked.addListener(() => browser.sidebarAction.open());

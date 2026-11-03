@@ -12,6 +12,12 @@
       <button id="grant">Allow access to YouTube Music</button>
     </section>
 
+    <section id="signed-out" hidden>
+      <p>You're signed out of YouTube Music, so your playlists, library and likes aren't available.</p>
+      <button id="sign-in">Sign in</button>
+      <button id="signed-in-retry">I've signed in</button>
+    </section>
+
     <section id="now-playing">
       <img id="artwork" alt="" hidden />
       <div class="meta">
@@ -65,6 +71,7 @@
     <main id="list"></main>
     <p id="status"></p>
 
+    <script src="common.js"></script>
     <script src="sidebar.js"></script>
   </body>
 </html>
