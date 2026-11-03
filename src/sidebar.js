@@ -104,7 +104,7 @@ async function showPlaylists() {
 
 async function showQueue() {
   if (view !== "queue") setView("queue");
-  const queue = await call("getQueue");
+  const queue = (await call("getQueue")) ?? []; // null: no player tab yet
   // Rebuilding every second would reset scrolling; only redraw on change.
   const signature = JSON.stringify(queue);
   if (list.dataset.signature === signature) return;
@@ -181,8 +181,12 @@ async function start() {
   $("needs-permission").hidden = granted;
   for (const id of ["now-playing", "transport", "search-form", "tabs", "list"]) $(id).hidden = !granted;
   if (!granted) return;
-  showPlaylists();
-  refresh();
+  // Music already loaded (e.g. kept playing while the sidebar was closed):
+  // open on the queue; otherwise on the playlists.
+  const state = await call("getState").catch(() => null);
+  renderState(state);
+  if (state?.videoId) await showQueue().catch(() => showPlaylists());
+  else showPlaylists();
   setInterval(refresh, 1000);
 }
 

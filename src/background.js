@@ -40,9 +40,15 @@ async function waitForPlayerPort() {
   if (!playerPort) throw new Error("The YouTube Music player tab is not ready yet.");
 }
 
-// Calls a function of player.js in the player tab and returns its result.
+// Only these create the player tab. Polling and controls must not, or
+// closing the tab would instantly respawn it.
+const CREATES_PLAYER = new Set(["getPlaylists", "search"]);
+
+// Calls a function of player.js in the player tab and returns its result,
+// or null when there is no player tab and this call shouldn't create one.
 async function callPlayer(method, args) {
-  await ensurePlayerTab();
+  if (CREATES_PLAYER.has(method)) await ensurePlayerTab();
+  else if (!(await storedPlayerTab())) return null;
   await waitForPlayerPort();
   const id = nextId++;
   return new Promise((resolve, reject) => {
@@ -84,11 +90,18 @@ browser.tabs.onRemoved.addListener(async (tabId) => {
   await browser.storage.session.remove("playerTabId");
 });
 
+// After ↗ shows the player tab, hide it again once the user switches away.
+browser.tabs.onActivated.addListener(async ({ previousTabId }) => {
+  const { playerTabId } = await browser.storage.session.get("playerTabId");
+  if (previousTabId != null && previousTabId === playerTabId) await browser.tabs.hide(previousTabId).catch(() => {});
+});
+
 const MESSAGES = {
   call: ({ method, args }) => callPlayer(method, args),
   playPlaylist: ({ id }) => playUrl(`${HOME}watch?list=${encodeURIComponent(id)}`),
   playSong: ({ videoId }) => playUrl(`${HOME}watch?v=${encodeURIComponent(videoId)}`),
-  // Shows the player tab, for the full YouTube Music page.
+  // Shows the player tab, for the full YouTube Music page. It hides itself
+  // again when the user switches to another tab (see onActivated above).
   showPlayer: async () => {
     const tab = await ensurePlayerTab();
     await browser.tabs.show(tab.id);

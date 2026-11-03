@@ -58,8 +58,16 @@ function setVolume({ percent }) {
   if (percent > 0 && p?.isMuted()) p.unMute();
 }
 
+// Songs that also have a music video appear twice in the DOM: the shown entry
+// and a hidden "counterpart" for the other version. Only the shown ones count.
+function queueItems() {
+  return [...document.querySelectorAll("ytmusic-player-queue ytmusic-player-queue-item")].filter(
+    (item) => !item.closest("#counterpart-renderer"),
+  );
+}
+
 function getQueue() {
-  return [...document.querySelectorAll("ytmusic-player-queue-item")].map((item, index) => ({
+  return queueItems().map((item, index) => ({
     index,
     title: text(".song-title", item),
     artist: text(".byline", item),
@@ -68,7 +76,7 @@ function getQueue() {
 }
 
 function playQueueItem({ index }) {
-  const item = document.querySelectorAll("ytmusic-player-queue-item")[index];
+  const item = queueItems()[index];
   (item?.querySelector("ytmusic-play-button-renderer") ?? item)?.click();
 }
 
@@ -96,15 +104,12 @@ async function innertube(endpoint, body) {
   };
   const auth = await sapisidHash();
   if (auth) headers.Authorization = auth;
-  // content.fetch sends the request as the page, with its cookies.
-  const response = await content.fetch(`/youtubei/v1/${endpoint}?prettyPrint=false`, {
-    method: "POST",
-    credentials: "include",
-    headers,
-    body: JSON.stringify({ context, ...body }),
-  });
+  // The page's own fetch sends the request exactly as YouTube Music would,
+  // with its cookies and origin. Options are cloned into the page's world.
+  const init = { method: "POST", credentials: "include", headers, body: JSON.stringify({ context, ...body }) };
+  const response = await page.fetch(`/youtubei/v1/${endpoint}?prettyPrint=false`, cloneInto(init, page));
   if (!response.ok) throw new Error(`YouTube Music answered ${response.status}`);
-  return response.json();
+  return JSON.parse(await response.text());
 }
 
 // The responses are deeply nested; walk them instead of hard-coding paths.
