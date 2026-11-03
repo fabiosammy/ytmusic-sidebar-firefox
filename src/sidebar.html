@@ -41,8 +41,15 @@
 
     <nav id="tabs">
       <button data-view="playlists" class="active">Playlists</button>
+      <button data-view="library">Library</button>
       <button data-view="queue">Queue</button>
       <button data-view="results" hidden>Results</button>
+    </nav>
+
+    <nav id="library-sections" hidden>
+      <button data-section="albums" class="active">Albums</button>
+      <button data-section="artists">Artists</button>
+      <button data-section="songs">Songs</button>
     </nav>
 
     <main id="list"></main>

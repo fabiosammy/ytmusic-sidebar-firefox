@@ -84,6 +84,44 @@ function setView(name) {
   view = name;
   delete list.dataset.signature;
   document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("active", b.dataset.view === name));
+  $("library-sections").hidden = name !== "library";
+}
+
+let librarySection = "albums";
+const LIBRARY_LABELS = { albums: "albums", artists: "artists", songs: "songs" };
+
+async function showLibrary(section = librarySection) {
+  librarySection = section;
+  setView("library");
+  document
+    .querySelectorAll("#library-sections button")
+    .forEach((b) => b.classList.toggle("active", b.dataset.section === section));
+  list.replaceChildren();
+  setStatus(`Loading your ${LIBRARY_LABELS[section]}…`);
+  try {
+    const items = await call("getLibrary", { section });
+    if (view !== "library" || librarySection !== section) return; // user moved on meanwhile
+    list.replaceChildren(
+      ...items.map((i) =>
+        item({ thumbnail: i.thumbnail, line1: i.title, line2: i.subtitle }, () => playLibraryItem(i)),
+      ),
+    );
+    setStatus(items.length ? "" : `No ${LIBRARY_LABELS[section]} in your library.`);
+  } catch (err) {
+    setStatus(`Couldn't load your library: ${err.message}`);
+  }
+}
+
+// Albums and songs play directly; artists need their page for a shuffle/radio.
+async function playLibraryItem(i) {
+  if (i.play) return play({ type: "play", ...i.play });
+  setStatus(`Finding something to play from ${i.title}…`);
+  try {
+    const playable = await call("playableFromPage", { browseId: i.browseId });
+    await play({ type: "play", ...playable });
+  } catch (err) {
+    setStatus(err.message);
+  }
 }
 
 async function showPlaylists() {
@@ -167,9 +205,14 @@ $("search-form").addEventListener("submit", (e) => {
 document.querySelectorAll("#tabs button").forEach((button) => {
   button.addEventListener("click", () => {
     if (button.dataset.view === "playlists") showPlaylists();
+    else if (button.dataset.view === "library") showLibrary();
     else if (button.dataset.view === "queue") showQueue();
     else showResults($("search").value.trim());
   });
+});
+
+document.querySelectorAll("#library-sections button").forEach((button) => {
+  button.addEventListener("click", () => showLibrary(button.dataset.section));
 });
 
 $("show-player").addEventListener("click", () => send({ type: "showPlayer" }));

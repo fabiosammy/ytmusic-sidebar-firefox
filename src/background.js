@@ -42,7 +42,7 @@ async function waitForPlayerPort() {
 
 // Only these create the player tab. Polling and controls must not, or
 // closing the tab would instantly respawn it.
-const CREATES_PLAYER = new Set(["getPlaylists", "search"]);
+const CREATES_PLAYER = new Set(["getPlaylists", "search", "getLibrary", "playableFromPage"]);
 
 // Calls a function of player.js in the player tab and returns its result,
 // or null when there is no player tab and this call shouldn't create one.
@@ -100,6 +100,13 @@ const MESSAGES = {
   call: ({ method, args }) => callPlayer(method, args),
   playPlaylist: ({ id }) => playUrl(`${HOME}watch?list=${encodeURIComponent(id)}`),
   playSong: ({ videoId }) => playUrl(`${HOME}watch?v=${encodeURIComponent(videoId)}`),
+  // A song, a song within a list, or a whole list (album, shuffle, radio).
+  play: ({ videoId, playlistId }) => {
+    const params = new URLSearchParams();
+    if (videoId) params.set("v", videoId);
+    if (playlistId) params.set("list", playlistId);
+    return playUrl(`${HOME}watch?${params}`);
+  },
   // Shows the player tab, for the full YouTube Music page. It hides itself
   // again when the user switches to another tab (see onActivated above).
   showPlayer: async () => {

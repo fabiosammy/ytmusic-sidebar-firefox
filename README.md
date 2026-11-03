@@ -9,7 +9,8 @@ YouTube Music tab** that the extension manages, so it:
 - is never doubled: the sidebar has no player of its own.
 
 The sidebar shows what's playing (artwork, progress, play/pause/next/previous,
-volume), your playlists, the current queue and song search.
+volume), your playlists, your library (albums, artists, songs), the current
+queue and song search. Clicking an artist plays their shuffle (or radio).
 
 ## Install (development)
 

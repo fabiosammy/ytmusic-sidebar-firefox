@@ -160,6 +160,17 @@ input[type="range"] {
   padding: 8px 12px;
 }
 
+#library-sections {
+  display: flex;
+  gap: 6px;
+  padding: 0 12px 8px;
+}
+
+#library-sections button {
+  font-size: 12px;
+}
+
+#library-sections button.active,
 #tabs button.active {
   background: var(--fg);
   color: var(--bg);

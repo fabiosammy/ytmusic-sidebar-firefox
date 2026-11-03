@@ -170,7 +170,74 @@ async function search({ query }) {
   return [...songs.values()].slice(0, 30);
 }
 
-const METHODS = { getState, control, seek, setVolume, getQueue, playQueueItem, getPlaylists, search };
+// First thing in a response that YouTube Music can play: a song
+// (watchEndpoint) or a whole list such as an album or shuffle (watchPlaylistEndpoint).
+function findPlayable(node) {
+  let found = null;
+  walk(node, (n) => {
+    if (found) return;
+    const song = n.watchEndpoint;
+    const list = n.watchPlaylistEndpoint;
+    if (song?.videoId) found = { videoId: song.videoId, playlistId: song.playlistId ?? null };
+    else if (list?.playlistId) found = { videoId: null, playlistId: list.playlistId };
+  });
+  return found;
+}
+
+// Library sections as YouTube Music names them in its own API.
+const LIBRARY = {
+  albums: "FEmusic_liked_albums",
+  artists: "FEmusic_library_corpus_track_artists",
+  songs: "FEmusic_liked_videos",
+};
+
+// Items of a library section. Each is either directly playable (`play`) or,
+// for artists, a page (`browseId`) to look a shuffle/radio up from.
+async function getLibrary({ section }) {
+  const json = await innertube("browse", { browseId: LIBRARY[section] });
+  const items = new Map();
+  walk(json, (node) => {
+    const two = node.musicTwoRowItemRenderer;
+    const row = node.musicResponsiveListItemRenderer;
+    const r = two ?? row;
+    if (!r) return;
+    const play = findPlayable(r);
+    const browseId = r.navigationEndpoint?.browseEndpoint?.browseId ?? null;
+    const key = play ? `${play.videoId}|${play.playlistId}` : browseId;
+    if (!key || items.has(key)) return;
+    items.set(key, {
+      title: two ? runs(two.title) : flexText(row, 0),
+      subtitle: two ? runs(two.subtitle) : flexText(row, 1),
+      thumbnail: lastThumbnail(
+        (two?.thumbnailRenderer ?? row?.thumbnail)?.musicThumbnailRenderer?.thumbnail?.thumbnails,
+      ),
+      play: browseId?.startsWith("UC") ? null : play, // artists: use their page
+      browseId,
+    });
+  });
+  return [...items.values()];
+}
+
+// For an artist (or any page): the first shuffle/radio/song it offers.
+async function playableFromPage({ browseId }) {
+  const json = await innertube("browse", { browseId });
+  const play = findPlayable(json);
+  if (!play) throw new Error("Nothing to play on that page.");
+  return play;
+}
+
+const METHODS = {
+  getState,
+  control,
+  seek,
+  setVolume,
+  getQueue,
+  playQueueItem,
+  getPlaylists,
+  search,
+  getLibrary,
+  playableFromPage,
+};
 
 function connect() {
   const port = browser.runtime.connect({ name: "ytm-tab" });
