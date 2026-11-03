@@ -33,6 +33,14 @@
         <button data-action="next" class="icon" title="Next">⏭</button>
         <input id="volume" type="range" min="0" max="100" step="1" aria-label="Volume" />
       </div>
+      <div class="buttons extras">
+        <button data-action="like" id="like" class="icon" title="Like">👍</button>
+        <button data-action="dislike" id="dislike" class="icon" title="Dislike">👎</button>
+        <button data-action="shuffle" class="icon on" title="Shuffle the queue">🔀</button>
+        <button data-action="repeat" id="repeat" class="icon" title="Repeat: off">🔁</button>
+        <button id="radio" class="icon on" title="Start radio from this song">📻</button>
+        <button id="notify" class="icon" title="Notify on song change: off">🔔</button>
+      </div>
     </section>
 
     <form id="search-form">
@@ -40,9 +48,11 @@
     </form>
 
     <nav id="tabs">
+      <button data-view="home">Home</button>
       <button data-view="playlists" class="active">Playlists</button>
       <button data-view="library">Library</button>
       <button data-view="queue">Queue</button>
+      <button data-view="lyrics">Lyrics</button>
       <button data-view="results" hidden>Results</button>
     </nav>
 

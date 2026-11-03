@@ -42,7 +42,7 @@ async function waitForPlayerPort() {
 
 // Only these create the player tab. Polling and controls must not, or
 // closing the tab would instantly respawn it.
-const CREATES_PLAYER = new Set(["getPlaylists", "search", "getLibrary", "playableFromPage"]);
+const CREATES_PLAYER = new Set(["getHome", "getPlaylists", "getLibrary", "getCollection", "search", "playableFromPage"]);
 
 // Calls a function of player.js in the player tab and returns its result,
 // or null when there is no player tab and this call shouldn't create one.
@@ -72,7 +72,8 @@ browser.runtime.onConnect.addListener(async (port) => {
   const { playerTabId } = await browser.storage.session.get("playerTabId");
   if (port.sender.tab?.id !== playerTabId) return; // the user's own YouTube Music tabs
   playerPort = port;
-  port.onMessage.addListener(({ id, result, error }) => {
+  port.onMessage.addListener(({ id, result, error, type, state }) => {
+    if (type === "songChanged") return notifySong(state);
     const request = pending.get(id);
     if (!request) return;
     pending.delete(id);
@@ -82,6 +83,19 @@ browser.runtime.onConnect.addListener(async (port) => {
     if (playerPort === port) playerPort = null;
   });
 });
+
+// Optional desktop notification when a new song starts (toggle: 🔔 in the sidebar).
+async function notifySong(state) {
+  const { notify } = await browser.storage.local.get("notify");
+  if (!notify) return;
+  const options = { type: "basic", title: state.title, message: [state.artist, state.album].filter(Boolean).join(" · ") };
+  const icon = browser.runtime.getURL("icons/icon.svg");
+  // The id is fixed so each song replaces the previous notification. If
+  // Firefox can't load the artwork, fall back to the extension icon.
+  await browser.notifications
+    .create("now-playing", { ...options, iconUrl: state.artwork || icon })
+    .catch(() => browser.notifications.create("now-playing", { ...options, iconUrl: icon }));
+}
 
 browser.tabs.onRemoved.addListener(async (tabId) => {
   const { playerTabId } = await browser.storage.session.get("playerTabId");

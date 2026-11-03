@@ -16,7 +16,8 @@
   },
   "permissions": [
     "storage",
-    "tabHide"
+    "tabHide",
+    "notifications"
   ],
   "host_permissions": [
     "https://music.youtube.com/*"

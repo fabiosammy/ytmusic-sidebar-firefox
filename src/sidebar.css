@@ -156,6 +156,7 @@ input[type="range"] {
 
 #tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 8px 12px;
 }
@@ -225,6 +226,54 @@ input[type="range"] {
 .item .line2 {
   color: var(--muted);
   font-size: 12px;
+}
+
+.extras .icon {
+  font-size: 15px;
+  opacity: 0.45;
+}
+
+.extras .icon.on {
+  opacity: 1;
+}
+
+.section-title {
+  margin: 12px 6px 4px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.collection-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 8px;
+}
+
+.collection-head .name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.more {
+  display: block;
+  margin: 8px auto;
+}
+
+.lyrics {
+  padding: 4px 8px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.lyrics .source {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px;
 }
 
 #status {
