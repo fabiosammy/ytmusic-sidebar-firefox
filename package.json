@@ -1,0 +1,14 @@
+{
+  "name": "ytmusic-sidebar-firefox",
+  "version": "0.1.0",
+  "scripts": {
+    "lint": "web-ext lint --ignore-files node_modules",
+    "package": "web-ext build --overwrite-dest --ignore-files node_modules package.json package-lock.json README.md",
+    "start": "web-ext run --url https://music.youtube.com"
+  },
+  "type": "module",
+  "private": "true",
+  "devDependencies": {
+    "web-ext": "^10.8.0"
+  }
+}

@@ -1,0 +1,69 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1d1d1f;
+  --surface: #f2f2f5;
+  --border: #dcdce0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #030303;
+    --fg: #ececf0;
+    --surface: #1f1f1f;
+    --border: #333333;
+  }
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px/1.4 system-ui, sans-serif;
+}
+
+nav {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.spacer {
+  flex: 1;
+}
+
+button {
+  font: inherit;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+}
+
+#needs-permission {
+  padding: 16px;
+  text-align: center;
+}
+
+#grant {
+  background: #ff0033;
+  border-color: #ff0033;
+  color: #ffffff;
+  padding: 6px 14px;
+}
+

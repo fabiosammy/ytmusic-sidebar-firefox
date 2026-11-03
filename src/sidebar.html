@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YouTube Music</title>
+    <link rel="stylesheet" href="sidebar.css" />
+  </head>
+  <body>
+    <nav>
+      <button data-path="/" title="Home">Home</button>
+      <button data-path="/library/playlists" title="Your playlists">Playlists</button>
+      <button data-path="/library" title="Your library">Library</button>
+      <span class="spacer"></span>
+      <button id="reload" title="Reload">⟳</button>
+      <button id="pop-out" title="Open this page in a tab">↗</button>
+    </nav>
+    <section id="needs-permission" hidden>
+      <p>Firefox needs your OK before this sidebar can show YouTube Music.</p>
+      <button id="grant">Allow access to YouTube Music</button>
+    </section>
+    <iframe
+      id="ytm"
+      allow="autoplay; encrypted-media; fullscreen; clipboard-write"
+    ></iframe>
+    <script src="sidebar.js"></script>
+  </body>
+</html>
