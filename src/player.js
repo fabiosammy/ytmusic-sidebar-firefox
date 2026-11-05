@@ -348,6 +348,22 @@ function connect() {
 
 connect();
 
+// Firefox sends the Next/Previous media keys only to the page's mediaSession
+// handlers (play/pause works without them). YouTube Music sometimes clears
+// or replaces its own, which makes those keys go dead. Keep our own handlers
+// in place: they press the same player bar buttons. Re-applied every few
+// seconds because YouTube Music re-registers its handlers as songs change.
+function claimMediaKeys() {
+  const session = page.navigator.mediaSession;
+  if (!session) return;
+  const press = (name) => exportFunction(() => document.querySelector(BUTTONS[name])?.click(), page);
+  session.setActionHandler("nexttrack", press("next"));
+  session.setActionHandler("previoustrack", press("previous"));
+}
+
+claimMediaKeys();
+setInterval(claimMediaKeys, 5000);
+
 // Tells the background when a new song starts, for the optional notification.
 // Waits for the title, which YouTube Music fills in shortly after the switch.
 let announcedVideoId = null;
