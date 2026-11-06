@@ -1,103 +1,136 @@
-# Sidebar for YouTube Music (Firefox)
+<p align="center">
+  <img src="icons/icon-128.png" width="96" height="96" alt="" />
+</p>
 
-A YouTube Music remote in the Firefox sidebar. Music plays in **one hidden
-YouTube Music tab** that the extension manages, so it:
+<h1 align="center">Sidebar for YouTube Music</h1>
 
-- keeps playing when you close the sidebar,
-- works with your keyboard's media keys (Firefox handles them for tabs, even
-  in the background),
-- is never doubled: the sidebar has no player of its own.
+<p align="center">
+  A YouTube Music remote in the Firefox sidebar and toolbar.<br />
+  Your playlists, library, queue, search and lyrics, next to any page, with
+  music that keeps playing when you close the sidebar.
+</p>
 
-The sidebar shows what's playing (artwork, progress, play/pause/next/previous,
-volume, like/dislike, shuffle, repeat, start radio from this song) and has
-these views:
+<p align="center">
+  <a href="https://addons.mozilla.org/firefox/addon/sidebar-for-youtube-music/"><b>Get it for Firefox</b></a>
+  ·
+  <a href="https://github.com/fabiosammy/ytmusic-sidebar-firefox/issues">Report a bug or suggest an idea</a>
+</p>
 
-- **Home**: Quick picks, mixes and recommendations
-- **Playlists** and **Library** (albums, artists, songs); playlists and albums
-  open to their songs with *Play all*, artists play their shuffle or radio
-- **Queue**, **Lyrics** of the current song, and song **search**
+![Now playing and the queue in the sidebar, next to a web page](store/screenshots/1-queue.png)
 
-The toolbar button opens a small popup with the current song, previous /
-play-pause / next, like and **Open sidebar** (`Alt+Shift+M` opens the sidebar
-directly).
+## Features
 
-Signed out of YouTube Music? The sidebar says so and offers **Sign in**. Once
-you sign in in any YouTube Music tab, the hidden player reloads by itself
-(or click **I've signed in**).
+- **Now playing** with artwork and progress; play/pause, next/previous,
+  volume, like/dislike, shuffle, repeat and *start radio from this song*
+- **Home**: quick picks, mixes and recommendations
+- **Playlists** and **Library** (albums, artists, songs). Playlists and albums
+  open to their songs with *Play all*; artists play their shuffle or radio
+- **Queue**, **lyrics** of the current song and song **search**, with
+  *Load more* on long lists
+- **Toolbar popup** with the current song and controls, without opening the
+  sidebar
+- **Keeps playing** when you close the sidebar, and your keyboard's **media
+  keys** work, even when Firefox is in the background
+- Optional **notification** when a new song starts
+- Follows Firefox's **light and dark** theme
 
-Long lists have *Load more*. 🔔 turns on a desktop notification when a new song
-starts (off by default).
+| Playlist pages | Toolbar popup | Dark theme |
+| --- | --- | --- |
+| ![A playlist open in the sidebar with Play all](store/screenshots/2-playlist.png) | ![The toolbar popup with the current song and controls](store/screenshots/3-popup.png) | ![The sidebar in Firefox's dark theme](store/screenshots/4-queue-dark.png) |
 
-## Install (development)
+## Getting started
+
+1. Install the add-on from
+   [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/sidebar-for-youtube-music/).
+2. Sign in at [music.youtube.com](https://music.youtube.com) (a free account
+   works).
+3. Open the sidebar with `Alt+Shift+M`, or click the toolbar icon →
+   **Open sidebar**. Click **Allow access to YouTube Music** if asked.
+4. Pick a playlist, an album or a search result.
+
+### If music doesn't start
+
+The add-on plays music in a hidden YouTube Music tab, and Firefox blocks
+audio that starts without a click. Allow it once for YouTube Music:
+
+1. Open music.youtube.com, press `Ctrl+I` (Page Info) → **Permissions** →
+   **Autoplay**: untick *Use Default*, choose **Allow Audio and Video**.
+2. If it still doesn't start: `about:config` →
+   `media.block-autoplay-until-in-foreground` → `false`. This one applies to
+   every site, so tabs you haven't looked at yet may start their own audio.
+
+### Good to know
+
+- The **↗** button shows the hidden player tab with the full YouTube Music
+  page. It hides itself again when you switch to another tab.
+- On free accounts, Next/Previous are disabled during ads. That is YouTube
+  Music's rule, not the add-on's.
+- Signed out? The sidebar tells you and offers **Sign in**; once you sign in
+  in any YouTube Music tab, the player picks it up by itself.
+
+## Privacy and permissions
+
+The add-on collects no data and talks to no server other than
+music.youtube.com, the same way the YouTube Music page itself does.
+
+| Permission | Why |
+| --- | --- |
+| Access to music.youtube.com | To run the player script in the YouTube Music tab |
+| Hide tabs | To keep the one player tab out of your tab bar |
+| Storage | To remember which tab is the player and your notification setting |
+| Notifications | For the optional "now playing" notification |
+
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. Please open an
+[issue](https://github.com/fabiosammy/ytmusic-sidebar-firefox/issues) first for
+bigger changes.
+
+### Development setup
+
+Requires Node.js 24 and Firefox 140 or newer.
 
 ```bash
 npm install
+npm run lint      # Mozilla's add-on linter
+npm run package   # zip in web-ext-artifacts/
+npm start         # throwaway Firefox profile with the add-on on music.youtube.com
 ```
 
-In Firefox: `about:debugging#/runtime/this-firefox` → **Load Temporary
-Add-on…** → pick `manifest.json`. Temporary add-ons are removed when Firefox
-restarts.
+To try it in your own Firefox: `about:debugging#/runtime/this-firefox` →
+**Load Temporary Add-on…** → pick `manifest.json`. Temporary add-ons are
+removed when Firefox restarts.
 
-## Checks and releases
+Every pull request runs [10 · Validate](.github/workflows/10-validate.yml):
+the linter, a version check and a package build. The built zip is attached to
+the run, so anyone can try a pull request.
 
-- **Every pull request** (and `main` after a merge) runs
-  [10 · Validate](.github/workflows/10-validate.yml): versions in `manifest.json` and
-  `package.json` match, `web-ext lint` has no errors, and the package builds.
-  The zip is attached to the run, to try a PR in `about:debugging`.
-- **Releases** are made by hand: bump `version` in `manifest.json` and
-  `package.json` in a PR, merge it, then run
-  [20 · Release](.github/workflows/20-release.yml) from the Actions tab. It creates the
-  GitHub release `v<version>` with the zip and generated notes, and refuses a
-  version that was already released.
-- Tick **Also submit this version to addons.mozilla.org** to send it to
-  Mozilla's review as well. That needs the repository secrets
-  `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` from
-  <https://addons.mozilla.org/developers/addon/api/key/>. Listing text,
-  screenshots and reviewer notes are in [`store/`](store/amo-listing.md).
+### How it works
 
-Locally, `npm run lint` and `npm run package` use the same settings
-([`web-ext-config.mjs`](web-ext-config.mjs)) and write
-`web-ext-artifacts/sidebar_for_youtube_music-<version>.zip`.
-
-The add-on id `ytmusic-sidebar@fabiosammy` must never change: AMO and
-Firefox use it to recognise updates.
-
-## Use
-
-1. Sign in to music.youtube.com in a normal tab once.
-2. Open the sidebar with `Alt+Shift+M` or the popup's **Open sidebar**. Click **Allow
-   access** if asked.
-3. Pick a playlist or search for a song. ↗ shows the player tab for the full
-   YouTube Music page.
-
-Firefox blocks audio that starts without a click in a tab that was never shown,
-so set these once:
-
-1. Open music.youtube.com in a tab, press `Ctrl+I` (Page Info) → **Permissions**
-   → **Autoplay**: untick *Use Default*, pick **Allow Audio and Video**.
-2. `about:config` → `media.block-autoplay-until-in-foreground` → `false`.
-
-## How it works
+Music only ever plays in **one hidden YouTube Music tab** that the add-on
+opens. The sidebar and the popup are remotes for it, so there is never a
+second player, playback survives closing the sidebar, and Firefox treats the
+media keys like for any tab.
 
 | File | Role |
 | --- | --- |
-| `src/background.js` | Creates and remembers the single hidden player tab (`tabs.hide`, id in `storage.session`) and relays sidebar requests to it |
-| `src/player.js` | Content script in the player tab: reads the player, presses its buttons, lists the queue, and calls YouTube Music's own web API (innertube, authenticated like the page) for playlists and search |
-| `src/sidebar.*` | The remote UI; polls the player state once a second |
-| `src/popup.*` | Toolbar popup: compact now playing and controls |
-| `src/common.js` | Helpers shared by sidebar and popup |
+| `src/background.js` | Creates and remembers the hidden player tab (`tabs.hide`, id in `storage.session`) and relays sidebar and popup requests to it |
+| `src/player.js` | Content script in YouTube Music: reads the player, presses its buttons, reads the queue, and calls YouTube Music's own web API (innertube, as the page does) for home, playlists, library, search and lyrics |
+| `src/sidebar.*` | The sidebar remote; polls the player once a second |
+| `src/popup.*` | The toolbar popup |
+| `src/common.js` | Helpers shared by the sidebar and the popup |
 
-Starting a playlist or song loads `watch?list=…` / `watch?v=…` in the player
-tab, so there is a short pause while YouTube Music loads.
+YouTube Music has no public API, so `src/player.js` depends on its page
+structure and internal API responses. When Google changes them, that is
+usually the file to fix.
 
-## Caveats
-
-YouTube Music has no public API. `src/player.js` relies on its page structure
-and its internal API responses; if Google changes them, it may need updating.
-
-Not affiliated with, endorsed by or sponsored by Google or YouTube. YouTube
-Music is a trademark of Google LLC.
+The screenshots above are rendered from mock pages that use the add-on's real
+CSS with made-up songs: `store/screenshots/render.sh <path-to-chrome-headless-shell>`.
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+[MIT](LICENSE)
+
+Sidebar for YouTube Music is an independent project. It is not affiliated
+with, endorsed by or sponsored by Google LLC or YouTube. YouTube and YouTube
+Music are trademarks of Google LLC.
