@@ -1,0 +1,47 @@
+name: 10 · Validate
+
+# Step 10: validates every pull request (and main after merge): Mozilla's
+# add-on linter, matching versions, and a buildable package attached to the
+# run so reviewers can load the PR's add-on in about:debugging.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Versions match
+        run: npm run --silent check-version
+
+      # Errors fail the job. Warnings don't: the one left is about Firefox for
+      # Android, which this desktop-only add-on (sidebar) can't support.
+      - name: Lint the add-on
+        run: npm run lint
+
+      - name: Build the package
+        run: npm run package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: add-on-zip
+          path: web-ext-artifacts/*.zip
+          if-no-files-found: error

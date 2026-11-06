@@ -38,19 +38,26 @@ In Firefox: `about:debugging#/runtime/this-firefox` → **Load Temporary
 Add-on…** → pick `manifest.json`. Temporary add-ons are removed when Firefox
 restarts.
 
-## Publishing to addons.mozilla.org
+## Checks and releases
 
-1. Bump `version` in `manifest.json` (and `package.json`).
-2. `npm run lint && npm run package` → `web-ext-artifacts/sidebar_for_youtube_music-<version>.zip`.
-3. Upload it at <https://addons.mozilla.org/developers/>. Listing text,
-   categories and reviewer notes are in [`store/amo-listing.md`](store/amo-listing.md).
+- **Every pull request** (and `main` after a merge) runs
+  [10 · Validate](.github/workflows/10-validate.yml): versions in `manifest.json` and
+  `package.json` match, `web-ext lint` has no errors, and the package builds.
+  The zip is attached to the run, to try a PR in `about:debugging`.
+- **Releases** are made by hand: bump `version` in `manifest.json` and
+  `package.json` in a PR, merge it, then run
+  [20 · Release](.github/workflows/20-release.yml) from the Actions tab. It creates the
+  GitHub release `v<version>` with the zip and generated notes, and refuses a
+  version that was already released.
+- Tick **Also submit this version to addons.mozilla.org** to send it to
+  Mozilla's review as well. That needs the repository secrets
+  `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` from
+  <https://addons.mozilla.org/developers/addon/api/key/>. Listing text,
+  screenshots and reviewer notes are in [`store/`](store/amo-listing.md).
 
-Later versions can be signed and submitted from the command line with AMO API
-credentials (from <https://addons.mozilla.org/developers/addon/api/key/>):
-
-```bash
-npx web-ext sign --channel=listed --api-key="$AMO_JWT_ISSUER" --api-secret="$AMO_JWT_SECRET" --ignore-files node_modules package.json package-lock.json README.md store
-```
+Locally, `npm run lint` and `npm run package` use the same settings
+([`web-ext-config.mjs`](web-ext-config.mjs)) and write
+`web-ext-artifacts/sidebar_for_youtube_music-<version>.zip`.
 
 The add-on id `ytmusic-sidebar@fabiosammy` must never change: AMO and
 Firefox use it to recognise updates.

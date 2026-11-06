@@ -1,0 +1,77 @@
+name: 20 · Release
+
+# Step 20: run by hand from the Actions tab once "10 · Validate" passed on
+# main with the new version in manifest.json and package.json. Builds the
+# add-on, creates the GitHub Release v<version> with the zip and generated
+# notes, and optionally submits the same version to addons.mozilla.org
+# (listed channel) for review.
+
+on:
+  workflow_dispatch:
+    inputs:
+      submit_to_amo:
+        description: Also submit this version to addons.mozilla.org for review
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Read the version
+        id: version
+        run: echo "version=$(npm run --silent check-version)" >> "$GITHUB_OUTPUT"
+
+      # A version can only be released once, on GitHub and on AMO alike.
+      - name: Refuse an already released version
+        env:
+          TAG: v${{ steps.version.outputs.version }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG"; then
+            echo "::error::$TAG is already released. Bump the version in manifest.json and package.json first."
+            exit 1
+          fi
+
+      # Errors fail the job. Warnings don't: the one left is about Firefox for
+      # Android, which this desktop-only add-on (sidebar) can't support.
+      - name: Lint the add-on
+        run: npm run lint
+
+      - name: Build the package
+        run: npm run package
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ steps.version.outputs.version }}
+        run: |
+          gh release create "$TAG" web-ext-artifacts/*.zip \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --generate-notes
+
+      # Needs the repository secrets AMO_JWT_ISSUER and AMO_JWT_SECRET
+      # (https://addons.mozilla.org/developers/addon/api/key/). Submits and
+      # returns without waiting for Mozilla's review.
+      - name: Submit to addons.mozilla.org
+        if: inputs.submit_to_amo
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: npx web-ext sign --channel=listed --approval-timeout=0
