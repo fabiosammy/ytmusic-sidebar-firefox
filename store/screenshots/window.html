@@ -160,6 +160,58 @@
       .shot-popup .popup {
         display: block;
       }
+
+      /* Firefox's dark theme, for the dark-mode screenshot. */
+      @media (prefers-color-scheme: dark) {
+        html,
+        body {
+          background: #1c1b22;
+          color: #fbfbfe;
+        }
+        .tab {
+          background: #42414d;
+          box-shadow: none;
+        }
+        .toolbar {
+          background: #2b2a33;
+          border-bottom-color: #0c0c0d;
+          color: #fbfbfe;
+        }
+        .url {
+          background: #1c1b22;
+          border-color: #1c1b22;
+          color: #fbfbfe;
+        }
+        .shot-popup .ext-button {
+          background: #52525e;
+        }
+        .sidebar {
+          background: #030303;
+          border-right-color: #0c0c0d;
+        }
+        .sidebar-header {
+          border-bottom-color: #333333;
+        }
+        .sidebar-header .close {
+          color: #b0b0b8;
+        }
+        .page {
+          background: #1c1b22;
+        }
+        .page .byline {
+          color: #a9a9b0;
+        }
+        .hero {
+          background: linear-gradient(135deg, #2f5d4c, #276b52 55%, #1d4a3a);
+        }
+        .line {
+          background: #3a3944;
+        }
+        .popup {
+          background: #1c1b22;
+          box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+        }
+      }
     </style>
   </head>
   <body>

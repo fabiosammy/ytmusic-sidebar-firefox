@@ -118,3 +118,4 @@ How to test:
   1. `store/screenshots/1-queue.png`: "Now playing and the queue in the sidebar, next to any page"
   2. `store/screenshots/2-playlist.png`: "Open a playlist or album, play it all or start from any song"
   3. `store/screenshots/3-popup.png`: "The toolbar popup: current song and controls without opening the sidebar"
+  4. `store/screenshots/4-queue-dark.png`: "Follows Firefox's dark theme"
