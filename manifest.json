@@ -59,5 +59,6 @@
       ],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "homepage_url": "https://github.com/fabiosammy/ytmusic-sidebar-firefox"
 }

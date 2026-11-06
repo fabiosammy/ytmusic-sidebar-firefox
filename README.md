@@ -90,3 +90,7 @@ and its internal API responses; if Google changes them, it may need updating.
 
 Not affiliated with, endorsed by or sponsored by Google or YouTube. YouTube
 Music is a trademark of Google LLC.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
