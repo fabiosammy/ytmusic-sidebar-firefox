@@ -88,7 +88,7 @@ bigger changes.
 
 ### Development setup
 
-Requires Node.js 24 and Firefox 140 or newer.
+Requires Node.js 24 and Firefox 142 or newer.
 
 ```bash
 npm install

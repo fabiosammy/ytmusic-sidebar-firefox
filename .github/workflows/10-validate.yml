@@ -32,8 +32,7 @@ jobs:
       - name: Versions match
         run: npm run --silent check-version
 
-      # Errors fail the job. Warnings don't: the one left is about Firefox for
-      # Android, which this desktop-only add-on (sidebar) can't support.
+      # Warnings fail too (web-ext-config.mjs: warningsAsErrors).
       - name: Lint the add-on
         run: npm run lint
 

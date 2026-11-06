@@ -15,4 +15,8 @@ export default {
   build: {
     overwriteDest: true,
   },
+  // No warnings are expected, so a new one fails the lint like an error.
+  lint: {
+    warningsAsErrors: true,
+  },
 };
