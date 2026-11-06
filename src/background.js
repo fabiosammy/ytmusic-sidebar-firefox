@@ -104,7 +104,7 @@ async function notifySong(state) {
   const { notify } = await browser.storage.local.get("notify");
   if (!notify) return;
   const options = { type: "basic", title: state.title, message: [state.artist, state.album].filter(Boolean).join(" · ") };
-  const icon = browser.runtime.getURL("icons/icon.svg");
+  const icon = browser.runtime.getURL("icons/icon-96.png");
   // The id is fixed so each song replaces the previous notification. If
   // Firefox can't load the artwork, fall back to the extension icon.
   await browser.notifications

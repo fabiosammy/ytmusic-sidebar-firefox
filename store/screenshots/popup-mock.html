@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Popup mock</title>
+    <!-- The real popup styles, filled with made-up data for store screenshots. -->
+    <link rel="stylesheet" href="../../src/popup.css" />
+  </head>
+  <body>
+    <section class="now">
+      <img id="artwork" alt="" />
+      <div class="meta">
+        <div id="title"></div>
+        <div id="artist"></div>
+      </div>
+    </section>
+    <div class="progress">
+      <span>2:08</span>
+      <div class="bar"><div id="bar-fill" style="width: 54%"></div></div>
+      <span>3:55</span>
+    </div>
+    <div class="buttons">
+      <button id="like" class="icon on">👍</button>
+      <button class="icon">⏮</button>
+      <button class="icon big">⏸</button>
+      <button class="icon">⏭</button>
+      <span class="spacer-icon"></span>
+    </div>
+    <button id="open-sidebar">Open sidebar</button>
+    <script src="mock-data.js"></script>
+    <script>
+      const now = MOCK.queue[2];
+      document.getElementById("artwork").src = art(now.hue);
+      document.getElementById("title").textContent = now.title;
+      document.getElementById("artist").textContent = now.artist;
+    </script>
+  </body>
+</html>

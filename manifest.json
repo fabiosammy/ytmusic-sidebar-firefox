@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Sidebar for YouTube Music",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "YouTube Music remote in the Firefox sidebar: playlists, library, queue, search and lyrics, with playback that survives closing it.",
   "browser_specific_settings": {
     "gecko": {
@@ -45,9 +45,9 @@
     }
   },
   "icons": {
-    "48": "icons/icon.svg",
-    "96": "icons/icon.svg",
-    "128": "icons/icon.svg"
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
   },
   "content_scripts": [
     {

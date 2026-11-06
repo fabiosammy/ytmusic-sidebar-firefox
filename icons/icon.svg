@@ -1,7 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <circle cx="32" cy="32" r="30" fill="#ff0033"/>
-  <circle cx="32" cy="32" r="18" fill="none" stroke="#fff" stroke-width="3"/>
-  <path d="M27 23 L43 32 L27 41 Z" fill="#fff"/>
-  <circle cx="50" cy="14" r="8" fill="#fff"/>
-  <path d="M46 14 h8 M50 10 v8" stroke="#ff0033" stroke-width="2.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <!-- Background tile -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+  <!-- Browser window -->
+  <rect x="19" y="27" width="90" height="74" rx="10" fill="none" stroke="#ffffff" stroke-width="6"/>
+  <!-- Sidebar panel with a list -->
+  <path d="M19 37a10 10 0 0 1 10-10h20v74H29a10 10 0 0 1-10-10z" fill="#ffffff"/>
+  <rect x="26" y="43" width="16" height="5" rx="2.5" fill="#6d5ff2"/>
+  <rect x="26" y="55" width="16" height="5" rx="2.5" fill="#6d5ff2"/>
+  <rect x="26" y="67" width="11" height="5" rx="2.5" fill="#6d5ff2"/>
+  <!-- Beamed eighth notes -->
+  <path d="M68 47 L96 40 L96 49 L68 56 Z" fill="#ffffff"/>
+  <rect x="68" y="48" width="5" height="33" fill="#ffffff"/>
+  <rect x="91" y="41" width="5" height="33" fill="#ffffff"/>
+  <ellipse cx="64.5" cy="81" rx="8.5" ry="6.5" transform="rotate(-20 64.5 81)" fill="#ffffff"/>
+  <ellipse cx="87.5" cy="74" rx="8.5" ry="6.5" transform="rotate(-20 87.5 74)" fill="#ffffff"/>
 </svg>

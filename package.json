@@ -1,6 +1,6 @@
 {
   "name": "ytmusic-sidebar-firefox",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "lint": "web-ext lint --ignore-files node_modules",
     "package": "web-ext build --overwrite-dest --ignore-files node_modules package.json package-lock.json README.md store",

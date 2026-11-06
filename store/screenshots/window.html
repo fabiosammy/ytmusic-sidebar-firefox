@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Store screenshot frame</title>
+    <!--
+      A 1280×800 Firefox-like window for the AMO screenshots. ?shot=queue |
+      playlist show the sidebar; ?shot=popup shows the toolbar popup.
+      Render with store/screenshots/render.sh.
+    -->
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1280px;
+        height: 800px;
+        overflow: hidden;
+        font: 13px/1.4 system-ui, sans-serif;
+        color: #15141a;
+        background: #f0f0f4;
+      }
+      .tabs {
+        height: 40px;
+        display: flex;
+        align-items: flex-end;
+        padding: 0 8px;
+      }
+      .tab {
+        width: 240px;
+        height: 34px;
+        margin-bottom: 3px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #ffffff;
+        border-radius: 6px;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.12);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .favicon {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        background: #2e9e6f;
+      }
+      .toolbar {
+        height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 12px;
+        background: #f9f9fb;
+        border-bottom: 1px solid #d7d7db;
+        color: #5b5b66;
+        font-size: 16px;
+      }
+      .url {
+        flex: 1;
+        height: 32px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #d7d7db;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #15141a;
+      }
+      .ext-icon {
+        width: 22px;
+        height: 22px;
+        display: block;
+      }
+      .ext-button {
+        padding: 4px;
+        border-radius: 4px;
+      }
+      .shot-popup .ext-button {
+        background: #e0e0e6;
+      }
+      .main {
+        display: flex;
+        height: 716px;
+      }
+      .sidebar {
+        width: 380px;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        border-right: 1px solid #d7d7db;
+      }
+      .shot-popup .sidebar {
+        display: none;
+      }
+      .sidebar-header {
+        height: 36px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #e5e5ea;
+        font-weight: 600;
+      }
+      .sidebar-header img {
+        width: 16px;
+        height: 16px;
+      }
+      .sidebar-header .close {
+        margin-left: auto;
+        color: #5b5b66;
+        font-weight: 400;
+      }
+      .sidebar iframe {
+        flex: 1;
+        border: 0;
+      }
+      .page {
+        flex: 1;
+        overflow: hidden;
+        background: #ffffff;
+        padding: 48px 72px;
+      }
+      .page h1 {
+        margin: 0 0 8px;
+        font: 700 34px/1.2 Georgia, serif;
+      }
+      .page .byline {
+        color: #6b6b70;
+        margin-bottom: 24px;
+      }
+      .hero {
+        height: 230px;
+        border-radius: 10px;
+        margin-bottom: 24px;
+        background: linear-gradient(135deg, #b9e4d0, #7cc4a4 55%, #4f9d7f);
+      }
+      .line {
+        height: 12px;
+        border-radius: 6px;
+        background: #e6e6ea;
+        margin-bottom: 14px;
+      }
+      .popup {
+        position: absolute;
+        top: 80px;
+        right: 54px;
+        width: 300px;
+        height: 188px;
+        border: 0;
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+        display: none;
+      }
+      .shot-popup .popup {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tabs">
+      <div class="tab"><span class="favicon"></span> Weekend trails</div>
+    </div>
+    <div class="toolbar">
+      <span>←</span><span>→</span><span>⟳</span>
+      <div class="url">example.com/outdoors/weekend-trails</div>
+      <span class="ext-button"><img class="ext-icon" src="../../icons/icon.svg" alt="" /></span>
+      <span>≡</span>
+    </div>
+    <div class="main">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="../../icons/icon.svg" alt="" /> Sidebar for YouTube Music <span class="close">✕</span>
+        </div>
+        <iframe id="sidebar"></iframe>
+      </aside>
+      <article class="page">
+        <h1>Weekend trails worth the drive</h1>
+        <div class="byline">Outdoors · 6 min read</div>
+        <div class="hero"></div>
+        <div class="line" style="width: 96%"></div>
+        <div class="line" style="width: 91%"></div>
+        <div class="line" style="width: 94%"></div>
+        <div class="line" style="width: 62%"></div>
+        <div class="line" style="width: 88%; margin-top: 28px"></div>
+        <div class="line" style="width: 93%"></div>
+        <div class="line" style="width: 79%"></div>
+      </article>
+    </div>
+    <iframe class="popup" src="popup-mock.html"></iframe>
+    <script>
+      const shot = new URLSearchParams(location.search).get("shot") || "queue";
+      document.body.classList.add(`shot-${shot}`);
+      document.getElementById("sidebar").src = `sidebar-mock.html?shot=${shot}`;
+    </script>
+  </body>
+</html>

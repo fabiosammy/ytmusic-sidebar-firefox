@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Sidebar mock</title>
+    <!-- The real sidebar styles, filled with made-up data for store screenshots. -->
+    <link rel="stylesheet" href="../../src/sidebar.css" />
+  </head>
+  <body>
+    <section id="now-playing">
+      <img id="artwork" alt="" />
+      <div class="meta">
+        <div id="title"></div>
+        <div id="artist"></div>
+      </div>
+      <button class="icon" title="Open the player tab">↗</button>
+    </section>
+
+    <section id="transport">
+      <div class="progress">
+        <span id="time">1:42</span>
+        <input id="seek" type="range" min="0" max="235" value="102" aria-label="Seek" />
+        <span id="duration">3:55</span>
+      </div>
+      <div class="buttons">
+        <button class="icon">⏮</button>
+        <button class="icon big">⏸</button>
+        <button class="icon">⏭</button>
+        <input id="volume" type="range" min="0" max="100" value="70" aria-label="Volume" />
+      </div>
+      <div class="buttons extras">
+        <button class="icon on">👍</button>
+        <button class="icon">👎</button>
+        <button class="icon on">🔀</button>
+        <button class="icon on">🔁</button>
+        <button class="icon on">📻</button>
+        <button class="icon">🔔</button>
+      </div>
+    </section>
+
+    <form id="search-form">
+      <input id="search" type="search" placeholder="Search songs…" />
+    </form>
+
+    <nav id="tabs">
+      <button data-view="home">Home</button>
+      <button data-view="playlists">Playlists</button>
+      <button data-view="library">Library</button>
+      <button data-view="queue">Queue</button>
+      <button data-view="lyrics">Lyrics</button>
+    </nav>
+
+    <main id="list"></main>
+
+    <script src="mock-data.js"></script>
+    <script>
+      const shot = new URLSearchParams(location.search).get("shot") || "queue";
+      const now = MOCK.queue[2];
+      document.getElementById("artwork").src = art(now.hue);
+      document.getElementById("title").textContent = now.title;
+      document.getElementById("artist").textContent = `${now.artist} · ${now.album}`;
+
+      const list = document.getElementById("list");
+      function row({ title, sub, hue, current }) {
+        const b = document.createElement("button");
+        b.className = `item${current ? " current" : ""}`;
+        if (hue != null) {
+          const img = document.createElement("img");
+          img.src = art(hue);
+          b.append(img);
+        }
+        const lines = document.createElement("div");
+        lines.className = "lines";
+        const l1 = document.createElement("div");
+        l1.className = "line1";
+        l1.textContent = title;
+        const l2 = document.createElement("div");
+        l2.className = "line2";
+        l2.textContent = sub;
+        lines.append(l1, l2);
+        b.append(lines);
+        return b;
+      }
+
+      const view = { queue: "queue", playlist: "playlists", popup: "home" }[shot];
+      document.querySelector(`#tabs [data-view="${view}"]`).classList.add("active");
+
+      if (shot === "queue") {
+        for (const [i, s] of MOCK.queue.entries())
+          list.append(row({ title: s.title, sub: s.artist, current: i === 2 }));
+      } else if (shot === "playlist") {
+        const head = document.createElement("div");
+        head.className = "collection-head";
+        head.innerHTML = '<button>←</button><div class="name">Late Night Drive</div><button>▶ Play all</button>';
+        list.append(head);
+        for (const s of MOCK.playlist) list.append(row({ title: s.title, sub: s.artist, hue: s.hue }));
+      } else {
+        for (const section of MOCK.home) {
+          const h = document.createElement("h3");
+          h.className = "section-title";
+          h.textContent = section.title;
+          list.append(h);
+          for (const s of section.items) list.append(row({ title: s.title, sub: s.sub, hue: s.hue }));
+        }
+      }
+    </script>
+  </body>
+</html>

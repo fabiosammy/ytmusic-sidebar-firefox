@@ -109,3 +109,12 @@ How to test:
 3. Pick a playlist: music starts in the hidden tab; close the sidebar and it
    keeps playing; the toolbar popup controls it.
 ```
+
+## Media
+
+- Add-on icon: `icons/icon-128.png` (also in the package manifest since 1.0.1)
+- Screenshots (1280×800, rendered from mock pages with the add-on's real CSS
+  and made-up songs by `store/screenshots/render.sh`), with captions:
+  1. `store/screenshots/1-queue.png`: "Now playing and the queue in the sidebar, next to any page"
+  2. `store/screenshots/2-playlist.png`: "Open a playlist or album, play it all or start from any song"
+  3. `store/screenshots/3-popup.png`: "The toolbar popup: current song and controls without opening the sidebar"
