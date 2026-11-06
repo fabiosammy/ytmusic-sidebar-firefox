@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Music Sidebar",
-  "version": "0.1.0",
-  "description": "A YouTube Music remote in the Firefox sidebar. Music plays in one hidden tab, keeps going when the sidebar closes, and works with your media keys.",
+  "name": "Sidebar for YouTube Music",
+  "version": "1.0.0",
+  "description": "YouTube Music remote in the Firefox sidebar: playlists, library, queue, search and lyrics, with playback that survives closing it.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "ytmusic-sidebar@local",
+      "id": "ytmusic-sidebar@fabiosammy",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
         "required": [
@@ -28,7 +28,7 @@
     ]
   },
   "sidebar_action": {
-    "default_title": "YouTube Music",
+    "default_title": "Sidebar for YouTube Music",
     "default_panel": "src/sidebar.html",
     "default_icon": "icons/icon.svg"
   },
@@ -46,7 +46,8 @@
   },
   "icons": {
     "48": "icons/icon.svg",
-    "96": "icons/icon.svg"
+    "96": "icons/icon.svg",
+    "128": "icons/icon.svg"
   },
   "content_scripts": [
     {

@@ -1,4 +1,4 @@
-# YouTube Music Sidebar (Firefox)
+# Sidebar for YouTube Music (Firefox)
 
 A YouTube Music remote in the Firefox sidebar. Music plays in **one hidden
 YouTube Music tab** that the extension manages, so it:
@@ -36,8 +36,24 @@ npm install
 
 In Firefox: `about:debugging#/runtime/this-firefox` → **Load Temporary
 Add-on…** → pick `manifest.json`. Temporary add-ons are removed when Firefox
-restarts. To keep it, run `npm run package` and sign the zip as an unlisted
-add-on at addons.mozilla.org.
+restarts.
+
+## Publishing to addons.mozilla.org
+
+1. Bump `version` in `manifest.json` (and `package.json`).
+2. `npm run lint && npm run package` → `web-ext-artifacts/sidebar_for_youtube_music-<version>.zip`.
+3. Upload it at <https://addons.mozilla.org/developers/>. Listing text,
+   categories and reviewer notes are in [`store/amo-listing.md`](store/amo-listing.md).
+
+Later versions can be signed and submitted from the command line with AMO API
+credentials (from <https://addons.mozilla.org/developers/addon/api/key/>):
+
+```bash
+npx web-ext sign --channel=listed --api-key="$AMO_JWT_ISSUER" --api-secret="$AMO_JWT_SECRET" --ignore-files node_modules package.json package-lock.json README.md store
+```
+
+The add-on id `ytmusic-sidebar@fabiosammy` must never change: AMO and
+Firefox use it to recognise updates.
 
 ## Use
 
@@ -71,3 +87,6 @@ tab, so there is a short pause while YouTube Music loads.
 
 YouTube Music has no public API. `src/player.js` relies on its page structure
 and its internal API responses; if Google changes them, it may need updating.
+
+Not affiliated with, endorsed by or sponsored by Google or YouTube. YouTube
+Music is a trademark of Google LLC.
