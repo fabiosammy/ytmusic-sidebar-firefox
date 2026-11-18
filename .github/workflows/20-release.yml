@@ -24,6 +24,9 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # The AMO secrets live in this environment, which only accepts runs from
+    # protected branches (main, via the "master" ruleset).
+    environment: release
     steps:
       - uses: actions/checkout@v7
 
@@ -65,7 +68,7 @@ jobs:
             --title "$TAG" \
             --generate-notes
 
-      # Needs the repository secrets AMO_JWT_ISSUER and AMO_JWT_SECRET
+      # Needs the release environment's secrets AMO_JWT_ISSUER and AMO_JWT_SECRET
       # (https://addons.mozilla.org/developers/addon/api/key/). Submits and
       # returns without waiting for Mozilla's review.
       - name: Submit to addons.mozilla.org
