@@ -11,8 +11,11 @@ function player() {
   return document.getElementById("movie_player")?.wrappedJSObject ?? null;
 }
 
+// The bottom player bar. YouTube Music replaced ytmusic-player-bar with
+// ytmusic-miniplayer in November 2026; both are supported while the old one
+// may still be served to some accounts.
 function playerBar() {
-  return document.querySelector("ytmusic-player-bar");
+  return document.querySelector("ytmusic-player-bar, ytmusic-miniplayer");
 }
 
 function text(selector, root = document) {
@@ -33,11 +36,28 @@ function requireSignIn() {
   if (!signedIn()) throw new Error("SIGNED_OUT");
 }
 
-// NONE | ALL | ONE. YouTube Music keeps it on the player bar element.
+// NONE | ALL | ONE. The old player bar kept it as an attribute. The new
+// repeat button only says it in its (translated) label, so read
+// aria-pressed for on/off and tell "one" from "all" by its icon, which draws
+// a "1" (path "M13 15V8…") where "all" has a dot. If YouTube changes the icon,
+// "one" just shows as "all".
 function repeatMode() {
   const bar = playerBar();
   const mode = bar?.getAttribute("repeat-mode") ?? bar?.wrappedJSObject?.repeatMode_;
-  return mode ? String(mode).toUpperCase() : "NONE";
+  if (mode) return String(mode).toUpperCase();
+  const button = document.querySelector(".ytmusicPlayerControlsRepeatButton button");
+  if (button?.getAttribute("aria-pressed") !== "true") return "NONE";
+  return button.querySelector("path")?.getAttribute("d")?.includes("M13 15V8") ? "ONE" : "ALL";
+}
+
+// LIKE | DISLIKE | INDIFFERENT, from the old like-status attribute or the
+// new toggle buttons' aria-pressed.
+function likeStatus(bar) {
+  const status = bar?.querySelector("ytmusic-like-button-renderer")?.getAttribute("like-status");
+  if (status) return status;
+  if (bar?.querySelector("like-button-view-model button")?.getAttribute("aria-pressed") === "true") return "LIKE";
+  if (bar?.querySelector("dislike-button-view-model button")?.getAttribute("aria-pressed") === "true") return "DISLIKE";
+  return "INDIFFERENT";
 }
 
 function getState() {
@@ -49,29 +69,41 @@ function getState() {
   const artwork = meta?.artwork;
   return {
     videoId: data.video_id,
-    title: meta?.title || text(".title", bar) || data.title || "",
-    artist: meta?.artist || text(".byline", bar) || data.author || "",
+    title: meta?.title || text(".title, .ytmusicTrackInfoTitle", bar) || data.title || "",
+    artist: meta?.artist || text(".byline, .ytmusicTrackInfoByline", bar) || data.author || "",
     album: meta?.album || "",
-    artwork: artwork?.length ? artwork[artwork.length - 1].src : bar?.querySelector("img.image")?.src || "",
+    artwork: artwork?.length
+      ? artwork[artwork.length - 1].src
+      : bar?.querySelector("img.image, img.ytmusicTrackInfoThumbnail")?.src || "",
     time: p.getCurrentTime(),
     duration: p.getDuration(),
     playing: p.getPlayerState() === 1,
     volume: p.getVolume(),
-    like: bar?.querySelector("ytmusic-like-button-renderer")?.getAttribute("like-status") ?? "INDIFFERENT",
+    like: likeStatus(bar),
     repeat: repeatMode(),
     signedIn: signedIn(),
   };
 }
 
-// Player bar buttons. Shuffle reshuffles the queue; repeat cycles off/all/one.
+// Player bar buttons: the old ytmusic-player-bar selector first, then the
+// November 2026 ytmusic-miniplayer one. Shuffle reshuffles the queue; repeat
+// cycles off/all/one.
 const BUTTONS = {
-  toggle: "ytmusic-player-bar #play-pause-button",
-  next: "ytmusic-player-bar .next-button",
-  previous: "ytmusic-player-bar .previous-button",
-  shuffle: "ytmusic-player-bar .shuffle",
-  repeat: "ytmusic-player-bar .repeat",
-  like: "ytmusic-player-bar #button-shape-like button, ytmusic-player-bar ytmusic-like-button-renderer .like",
-  dislike: "ytmusic-player-bar #button-shape-dislike button, ytmusic-player-bar ytmusic-like-button-renderer .dislike",
+  toggle: "ytmusic-player-bar #play-pause-button, .ytmusicPlayerControlsPlayPauseButton button",
+  next: "ytmusic-player-bar .next-button, .ytmusicPlayerControlsNextButton button",
+  previous: "ytmusic-player-bar .previous-button, .ytmusicPlayerControlsPreviousButton button",
+  shuffle: "ytmusic-player-bar .shuffle, .ytmusicPlayerControlsShuffleButton button",
+  repeat: "ytmusic-player-bar .repeat, .ytmusicPlayerControlsRepeatButton button",
+  like: [
+    "ytmusic-player-bar #button-shape-like button",
+    "ytmusic-player-bar ytmusic-like-button-renderer .like",
+    "ytmusic-miniplayer like-button-view-model button",
+  ].join(", "),
+  dislike: [
+    "ytmusic-player-bar #button-shape-dislike button",
+    "ytmusic-player-bar ytmusic-like-button-renderer .dislike",
+    "ytmusic-miniplayer dislike-button-view-model button",
+  ].join(", "),
 };
 
 function control({ action }) {
